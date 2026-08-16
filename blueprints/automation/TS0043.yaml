@@ -1,0 +1,169 @@
+blueprint:
+  name: Zigbee2MQTT - Tuya TS0043 3 button remote
+  description: |
+    Version: 1.1
+
+    Automate your Tuya TS0043 3 button remote using device triggers.
+  domain: automation
+  homeassistant:
+    min_version: 2026.1.0
+  author: filip.mosner@seznam.cz
+  input:
+    tuya_ts0043:
+      name: Tuya TS0043 3 button remote
+      description: Tuya TS0043 3 button remote to use
+      selector:
+        device:
+          filter:
+            - integration: mqtt
+    button_one_single_press:
+      name: Button 1 (single press)
+      description: Action to run on button 1 single press
+      default: []
+      selector:
+        action: {}
+    button_one_double_press:
+      name: Button 1 (double press)
+      description: Action to run on button 1 double press
+      default: []
+      selector:
+        action: {}
+    button_one_long_press:
+      name: Button 1 (long press)
+      description: Action to run on button 1 long press
+      default: []
+      selector:
+        action: {}
+    button_two_single_press:
+      name: Button 2 (single press)
+      description: Action to run on button 2 single press
+      default: []
+      selector:
+        action: {}
+    button_two_double_press:
+      name: Button 2 (double press)
+      description: Action to run on button 2 double press
+      default: []
+      selector:
+        action: {}
+    button_two_long_press:
+      name: Button 2 (long press)
+      description: Action to run on button 2 long press
+      default: []
+      selector:
+        action: {}
+    button_three_single_press:
+      name: Button 3 (single press)
+      description: Action to run on button 3 single press
+      default: []
+      selector:
+        action: {}
+    button_three_double_press:
+      name: Button 3 (double press)
+      description: Action to run on button 3 double press
+      default: []
+      selector:
+        action: {}
+    button_three_long_press:
+      name: Button 3 (long press)
+      description: Action to run on button 3 long press
+      default: []
+      selector:
+        action: {}
+mode: restart
+max_exceeded: silent
+
+triggers:
+  - trigger: device
+    device_id: !input tuya_ts0043
+    domain: mqtt
+    type: action
+    subtype: 1_single
+    id: button_1_single
+  - trigger: device
+    device_id: !input tuya_ts0043
+    domain: mqtt
+    type: action
+    subtype: 1_double
+    id: button_1_double
+  - trigger: device
+    device_id: !input tuya_ts0043
+    domain: mqtt
+    type: action
+    subtype: 1_hold
+    id: button_1_long
+  - trigger: device
+    device_id: !input tuya_ts0043
+    domain: mqtt
+    type: action
+    subtype: 2_single
+    id: button_2_single
+  - trigger: device
+    device_id: !input tuya_ts0043
+    domain: mqtt
+    type: action
+    subtype: 2_double
+    id: button_2_double
+  - trigger: device
+    device_id: !input tuya_ts0043
+    domain: mqtt
+    type: action
+    subtype: 2_hold
+    id: button_2_long
+  - trigger: device
+    device_id: !input tuya_ts0043
+    domain: mqtt
+    type: action
+    subtype: 3_single
+    id: button_3_single
+  - trigger: device
+    device_id: !input tuya_ts0043
+    domain: mqtt
+    type: action
+    subtype: 3_double
+    id: button_3_double
+  - trigger: device
+    device_id: !input tuya_ts0043
+    domain: mqtt
+    type: action
+    subtype: 3_hold
+    id: button_3_long
+
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: button_1_single
+        sequence: !input "button_one_single_press"
+      - conditions:
+          - condition: trigger
+            id: button_1_double
+        sequence: !input "button_one_double_press"
+      - conditions:
+          - condition: trigger
+            id: button_1_long
+        sequence: !input "button_one_long_press"
+      - conditions:
+          - condition: trigger
+            id: button_2_single
+        sequence: !input "button_two_single_press"
+      - conditions:
+          - condition: trigger
+            id: button_2_double
+        sequence: !input "button_two_double_press"
+      - conditions:
+          - condition: trigger
+            id: button_2_long
+        sequence: !input "button_two_long_press"
+      - conditions:
+          - condition: trigger
+            id: button_3_single
+        sequence: !input "button_three_single_press"
+      - conditions:
+          - condition: trigger
+            id: button_3_double
+        sequence: !input "button_three_double_press"
+      - conditions:
+          - condition: trigger
+            id: button_3_long
+        sequence: !input "button_three_long_press"
