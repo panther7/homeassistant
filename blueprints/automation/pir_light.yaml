@@ -1,0 +1,164 @@
+blueprint:
+  name: "Motion - Light"
+  description: |
+    Version: 1.1
+
+    Automation that turns on a light based on motion and illumination
+  domain: automation
+
+  input:
+    occupancy_sensor:
+      name: Motion sensor
+      description: Motion sensor
+      selector:
+        entity:
+          filter:
+            device_class:
+              - occupancy
+
+    illumination_sensor:
+      name: Illumination sensor
+      description: Illumination sensor
+      default: ""
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+
+    motion_helper:
+      name: Helper - Light activated by motion sensor
+      description: Switch or input_boolean that tracks whether the motion sensor turned on the light
+      selector:
+        entity:
+          filter:
+            - domain:
+                - input_boolean
+                - switch
+
+    light_entity:
+      name: Light
+      description: Switch or light controlled by this automation
+      selector:
+        entity:
+          filter:
+            - domain:
+                - switch
+                - light
+
+    light_duration:
+      name: Light duration
+      description: How long the light stays on after the motion sensor clears
+      default:
+        seconds: 30
+      selector:
+        duration:
+
+    sunset_offset:
+      name: Sunset time offset
+      description: Sunset time offset (for example, -02:00:00)
+      default: "-02:00:00"
+      selector:
+        text:
+
+    next_dawn_sensor:
+      name: Next dawn sensor
+      description: Sensor that provides the next dawn time (sun.sun entity with the next_dawn attribute)
+      default: "sensor.sun_next_dawn"
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+
+triggers:
+  - trigger: state
+    entity_id:
+      - !input illumination_sensor
+    not_from:
+      - unknown
+      - unavailable
+    not_to:
+      - unknown
+      - unavailable
+  - trigger: occupancy.detected
+    target:
+      entity_id: !input occupancy_sensor
+    options:
+      behavior: each
+    id: detected
+  - trigger: occupancy.cleared
+    target:
+      entity_id: !input occupancy_sensor
+    options:
+      behavior: each
+      for: !input light_duration
+    id: cleared
+  - trigger: state
+    entity_id:
+      - !input light_entity
+    not_from:
+      - unknown
+      - unavailable
+    to: "off"
+    id: lightOff
+
+condition: []
+
+actions:
+  - if:
+      - condition: trigger
+        id: lightOff
+    then:
+      - action: switch.turn_off
+        target:
+          entity_id: !input motion_helper
+      - stop: ""
+    enabled: true
+
+  - if:
+      - condition: trigger
+        id: detected
+      - condition: state
+        entity_id: !input light_entity
+        state: "on"
+    then:
+      - stop: ""
+
+  - if:
+      - condition: state
+        entity_id: !input occupancy_sensor
+        state: "on"
+      - condition: state
+        entity_id: !input illumination_sensor
+        state: "dim"
+      - condition: state
+        entity_id: !input light_entity
+        state: "off"
+    #     - condition: sun
+    #       after: sunset
+    #        after_offset: !input sunset_offset
+    #      - condition: time
+    #        before: !input next_dawn_sensor
+    then:
+      - action: switch.turn_on
+        target:
+          entity_id: !input motion_helper
+      - action: switch.turn_on
+        target:
+          entity_id: !input light_entity
+      - stop: ""
+
+  - if:
+      - condition: trigger
+        id: cleared
+      - condition: state
+        entity_id: !input motion_helper
+        state: "on"
+    then:
+      - action: switch.turn_off
+        target:
+          entity_id: !input light_entity
+      - action: switch.turn_off
+        target:
+          entity_id: !input motion_helper
+
+mode: restart
